@@ -64,21 +64,26 @@ message ChallengeRecord {
   int64 timeLimitMillis = 7;
   int64 startTimeUnix = 8;
   map<string, ParticipantMetadata> participants = 9;
-  repeated UserSubmissions submissions = 10;
-  repeated LeaderboardEntry leaderboard = 11;
-  ChallengeConfig config = 12;
-  repeated string processedProblemIds = 13; //user can pass predefined qns in this, if len() > 1, ignore auto gen via ratio.
-  int64 createdAt = 14;
-  int64 problemCount = 15;
+  int64 maxParticipants = 10;
+  repeated UserSubmissions submissions = 11;
+  repeated LeaderboardEntry leaderboard = 12;
+  ChallengeConfig config = 13;
+  repeated string processedProblemIds = 14;
+  int64 createdAt = 15;
+  int64 problemCount = 16;
+  bool ownerReserveSlot = 17;
 }
 
-message GetChallengeRoomInfoMetadataRequest{
-  string challengeId  = 1;
+message GetChallengeRoomInfoMetadataRequest {
+  string challengeId = 1;
   optional string password = 2;
 }
 
-message GetChallengeRoomInfoMetadataResponse{
-  ChallengeRecord challenge = 1;
+message GetChallengeRoomInfoMetadataResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  ChallengeRecord challenge = 4;
 }
 
 message PaginationRequest {
@@ -102,6 +107,17 @@ message GetOwnersActiveChallengesRequest {
   PaginationRequest pagination = 2;
 }
 
+
+enum ComplexityStatus {
+  COMPLEXITY_UNSPECIFIED = 0;
+  LINEAR = 1;
+  CONSTANT = 2;
+  QUADRATIC = 3;
+  LOGARITHMIC = 4;
+  EXPONENTIAL = 5;
+  OTHER = 6;
+}
+
 message PushSubmissionStatusRequest {
   string userCode = 1;
   string challengeId = 2;
@@ -109,50 +125,117 @@ message PushSubmissionStatusRequest {
   string problemId = 4;
   string submissionId = 6;
   int32 score = 7;
-  bool isSuccessful = 8; 
-  int64 TimeTakenMillis = 9;
+  bool isSuccessful = 8;
+  int64 timeTakenMillis = 9;
   string traceId = 10;
+  optional ComplexityStatus timeComplexityStatus = 11;
+  optional ComplexityStatus memoryComplexityStatus = 12;
 }
-
 
 message PushSubmissionStatusResponse {
-  string message = 1;
-  bool success = 2;
-}
-message AbandonChallengeRequest{
-  string challengeId = 1;
-  string creatorId = 2;
-}
-message AbandonChallengeResponse{
   bool success = 1;
   string message = 2;
   string errorType = 3;
 }
 
-message GetFullChallengeDataRequest{
+message AbandonChallengeRequest {
+  string challengeId = 1;
+  string creatorId = 2;
+}
+
+message AbandonChallengeResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+}
+
+message GetFullChallengeDataRequest {
   string challengeId = 1;
   optional string password = 2;
 }
 
-message GetFullChallengeDataResponse{
-  ChallengeRecord challenge = 1;
+message GetFullChallengeDataResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  ChallengeRecord challenge = 4;
+}
+
+message PostChallengeNotification {
+  string type = 1;
+  string message = 2;
+  int64 time = 3;
+}
+
+message PostChallengeChatMessage {
+  string userId = 1;
+  string profilePic = 2;
+  string message = 3;
+  int64 time = 4;
+}
+
+message PostChallengeDocument {
+  string challengeId = 1;
+  string creatorId = 2;
+  int64 createdAt = 3;
+  string title = 4;
+  bool isPrivate = 5;
+  string status = 6;
+  int64 timeLimit = 7;
+  int64 startTime = 8;
+  repeated PostChallengeNotification notifications = 9;
+  repeated PostChallengeChatMessage chat = 10;
+  repeated UserSubmissions submissions = 11;
+}
+
+message GetPostChallengeDataRequest {
+  string challengeId = 1;
+  string userId = 2;
+}
+
+message GetPostChallengeDataResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  PostChallengeDocument challenge = 4;
+}
+
+message CreateChallengeResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  ChallengeRecord challenge = 4;
+}
+
+message GetChallengeHistoryResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  ChallengeListResponse list = 4;
+}
+
+message GetActiveOpenChallengesResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  ChallengeListResponse list = 4;
+}
+
+message GetOwnersActiveChallengesResponse {
+  bool success = 1;
+  string message = 2;
+  string errorType = 3;
+  ChallengeListResponse list = 4;
 }
 
 service ChallengeService {
-  rpc CreateChallenge(ChallengeRecord) returns (ChallengeRecord) {}
-  rpc AbandonChallenge(AbandonChallengeRequest) returns (AbandonChallengeResponse){}
-
+  rpc CreateChallenge(ChallengeRecord) returns (CreateChallengeResponse);
+  rpc AbandonChallenge(AbandonChallengeRequest) returns (AbandonChallengeResponse);
   rpc GetChallengeRoomInfoMetadata(GetChallengeRoomInfoMetadataRequest) returns (GetChallengeRoomInfoMetadataResponse);
   rpc GetFullChallengeData(GetFullChallengeDataRequest) returns (GetFullChallengeDataResponse);
-
-
-  rpc GetChallengeHistory(GetChallengeHistoryRequest) returns (ChallengeListResponse) {}
-
-  //get the publically available challenges with isPrivate:false
-  rpc GetActiveOpenChallenges(PaginationRequest) returns (ChallengeListResponse) {}
-
-  //all open challenges of the user
-  rpc GetOwnersActiveChallenges(GetOwnersActiveChallengesRequest) returns (ChallengeListResponse) {}
-
-  rpc PushSubmissionStatus(PushSubmissionStatusRequest) returns (PushSubmissionStatusResponse) {}
+  rpc GetChallengeHistory(GetChallengeHistoryRequest) returns (GetChallengeHistoryResponse);
+  rpc GetActiveOpenChallenges(PaginationRequest) returns (GetActiveOpenChallengesResponse);
+  rpc GetOwnersActiveChallenges(GetOwnersActiveChallengesRequest) returns (GetOwnersActiveChallengesResponse);
+  rpc PushSubmissionStatus(PushSubmissionStatusRequest) returns (PushSubmissionStatusResponse);
+  rpc GetPostChallengeData(GetPostChallengeDataRequest) returns (GetPostChallengeDataResponse);
 }

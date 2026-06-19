@@ -27,22 +27,22 @@ const (
 	ChallengeService_GetActiveOpenChallenges_FullMethodName      = "/challenge.ChallengeService/GetActiveOpenChallenges"
 	ChallengeService_GetOwnersActiveChallenges_FullMethodName    = "/challenge.ChallengeService/GetOwnersActiveChallenges"
 	ChallengeService_PushSubmissionStatus_FullMethodName         = "/challenge.ChallengeService/PushSubmissionStatus"
+	ChallengeService_GetPostChallengeData_FullMethodName         = "/challenge.ChallengeService/GetPostChallengeData"
 )
 
 // ChallengeServiceClient is the client API for ChallengeService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChallengeServiceClient interface {
-	CreateChallenge(ctx context.Context, in *ChallengeRecord, opts ...grpc.CallOption) (*ChallengeRecord, error)
+	CreateChallenge(ctx context.Context, in *ChallengeRecord, opts ...grpc.CallOption) (*CreateChallengeResponse, error)
 	AbandonChallenge(ctx context.Context, in *AbandonChallengeRequest, opts ...grpc.CallOption) (*AbandonChallengeResponse, error)
 	GetChallengeRoomInfoMetadata(ctx context.Context, in *GetChallengeRoomInfoMetadataRequest, opts ...grpc.CallOption) (*GetChallengeRoomInfoMetadataResponse, error)
 	GetFullChallengeData(ctx context.Context, in *GetFullChallengeDataRequest, opts ...grpc.CallOption) (*GetFullChallengeDataResponse, error)
-	GetChallengeHistory(ctx context.Context, in *GetChallengeHistoryRequest, opts ...grpc.CallOption) (*ChallengeListResponse, error)
-	// get the publically available challenges with isPrivate:false
-	GetActiveOpenChallenges(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*ChallengeListResponse, error)
-	// all open challenges of the user
-	GetOwnersActiveChallenges(ctx context.Context, in *GetOwnersActiveChallengesRequest, opts ...grpc.CallOption) (*ChallengeListResponse, error)
+	GetChallengeHistory(ctx context.Context, in *GetChallengeHistoryRequest, opts ...grpc.CallOption) (*GetChallengeHistoryResponse, error)
+	GetActiveOpenChallenges(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*GetActiveOpenChallengesResponse, error)
+	GetOwnersActiveChallenges(ctx context.Context, in *GetOwnersActiveChallengesRequest, opts ...grpc.CallOption) (*GetOwnersActiveChallengesResponse, error)
 	PushSubmissionStatus(ctx context.Context, in *PushSubmissionStatusRequest, opts ...grpc.CallOption) (*PushSubmissionStatusResponse, error)
+	GetPostChallengeData(ctx context.Context, in *GetPostChallengeDataRequest, opts ...grpc.CallOption) (*GetPostChallengeDataResponse, error)
 }
 
 type challengeServiceClient struct {
@@ -53,9 +53,9 @@ func NewChallengeServiceClient(cc grpc.ClientConnInterface) ChallengeServiceClie
 	return &challengeServiceClient{cc}
 }
 
-func (c *challengeServiceClient) CreateChallenge(ctx context.Context, in *ChallengeRecord, opts ...grpc.CallOption) (*ChallengeRecord, error) {
+func (c *challengeServiceClient) CreateChallenge(ctx context.Context, in *ChallengeRecord, opts ...grpc.CallOption) (*CreateChallengeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChallengeRecord)
+	out := new(CreateChallengeResponse)
 	err := c.cc.Invoke(ctx, ChallengeService_CreateChallenge_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -93,9 +93,9 @@ func (c *challengeServiceClient) GetFullChallengeData(ctx context.Context, in *G
 	return out, nil
 }
 
-func (c *challengeServiceClient) GetChallengeHistory(ctx context.Context, in *GetChallengeHistoryRequest, opts ...grpc.CallOption) (*ChallengeListResponse, error) {
+func (c *challengeServiceClient) GetChallengeHistory(ctx context.Context, in *GetChallengeHistoryRequest, opts ...grpc.CallOption) (*GetChallengeHistoryResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChallengeListResponse)
+	out := new(GetChallengeHistoryResponse)
 	err := c.cc.Invoke(ctx, ChallengeService_GetChallengeHistory_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -103,9 +103,9 @@ func (c *challengeServiceClient) GetChallengeHistory(ctx context.Context, in *Ge
 	return out, nil
 }
 
-func (c *challengeServiceClient) GetActiveOpenChallenges(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*ChallengeListResponse, error) {
+func (c *challengeServiceClient) GetActiveOpenChallenges(ctx context.Context, in *PaginationRequest, opts ...grpc.CallOption) (*GetActiveOpenChallengesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChallengeListResponse)
+	out := new(GetActiveOpenChallengesResponse)
 	err := c.cc.Invoke(ctx, ChallengeService_GetActiveOpenChallenges_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -113,9 +113,9 @@ func (c *challengeServiceClient) GetActiveOpenChallenges(ctx context.Context, in
 	return out, nil
 }
 
-func (c *challengeServiceClient) GetOwnersActiveChallenges(ctx context.Context, in *GetOwnersActiveChallengesRequest, opts ...grpc.CallOption) (*ChallengeListResponse, error) {
+func (c *challengeServiceClient) GetOwnersActiveChallenges(ctx context.Context, in *GetOwnersActiveChallengesRequest, opts ...grpc.CallOption) (*GetOwnersActiveChallengesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChallengeListResponse)
+	out := new(GetOwnersActiveChallengesResponse)
 	err := c.cc.Invoke(ctx, ChallengeService_GetOwnersActiveChallenges_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -133,20 +133,29 @@ func (c *challengeServiceClient) PushSubmissionStatus(ctx context.Context, in *P
 	return out, nil
 }
 
+func (c *challengeServiceClient) GetPostChallengeData(ctx context.Context, in *GetPostChallengeDataRequest, opts ...grpc.CallOption) (*GetPostChallengeDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPostChallengeDataResponse)
+	err := c.cc.Invoke(ctx, ChallengeService_GetPostChallengeData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChallengeServiceServer is the server API for ChallengeService service.
 // All implementations must embed UnimplementedChallengeServiceServer
 // for forward compatibility.
 type ChallengeServiceServer interface {
-	CreateChallenge(context.Context, *ChallengeRecord) (*ChallengeRecord, error)
+	CreateChallenge(context.Context, *ChallengeRecord) (*CreateChallengeResponse, error)
 	AbandonChallenge(context.Context, *AbandonChallengeRequest) (*AbandonChallengeResponse, error)
 	GetChallengeRoomInfoMetadata(context.Context, *GetChallengeRoomInfoMetadataRequest) (*GetChallengeRoomInfoMetadataResponse, error)
 	GetFullChallengeData(context.Context, *GetFullChallengeDataRequest) (*GetFullChallengeDataResponse, error)
-	GetChallengeHistory(context.Context, *GetChallengeHistoryRequest) (*ChallengeListResponse, error)
-	// get the publically available challenges with isPrivate:false
-	GetActiveOpenChallenges(context.Context, *PaginationRequest) (*ChallengeListResponse, error)
-	// all open challenges of the user
-	GetOwnersActiveChallenges(context.Context, *GetOwnersActiveChallengesRequest) (*ChallengeListResponse, error)
+	GetChallengeHistory(context.Context, *GetChallengeHistoryRequest) (*GetChallengeHistoryResponse, error)
+	GetActiveOpenChallenges(context.Context, *PaginationRequest) (*GetActiveOpenChallengesResponse, error)
+	GetOwnersActiveChallenges(context.Context, *GetOwnersActiveChallengesRequest) (*GetOwnersActiveChallengesResponse, error)
 	PushSubmissionStatus(context.Context, *PushSubmissionStatusRequest) (*PushSubmissionStatusResponse, error)
+	GetPostChallengeData(context.Context, *GetPostChallengeDataRequest) (*GetPostChallengeDataResponse, error)
 	mustEmbedUnimplementedChallengeServiceServer()
 }
 
@@ -157,7 +166,7 @@ type ChallengeServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedChallengeServiceServer struct{}
 
-func (UnimplementedChallengeServiceServer) CreateChallenge(context.Context, *ChallengeRecord) (*ChallengeRecord, error) {
+func (UnimplementedChallengeServiceServer) CreateChallenge(context.Context, *ChallengeRecord) (*CreateChallengeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateChallenge not implemented")
 }
 func (UnimplementedChallengeServiceServer) AbandonChallenge(context.Context, *AbandonChallengeRequest) (*AbandonChallengeResponse, error) {
@@ -169,17 +178,20 @@ func (UnimplementedChallengeServiceServer) GetChallengeRoomInfoMetadata(context.
 func (UnimplementedChallengeServiceServer) GetFullChallengeData(context.Context, *GetFullChallengeDataRequest) (*GetFullChallengeDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFullChallengeData not implemented")
 }
-func (UnimplementedChallengeServiceServer) GetChallengeHistory(context.Context, *GetChallengeHistoryRequest) (*ChallengeListResponse, error) {
+func (UnimplementedChallengeServiceServer) GetChallengeHistory(context.Context, *GetChallengeHistoryRequest) (*GetChallengeHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChallengeHistory not implemented")
 }
-func (UnimplementedChallengeServiceServer) GetActiveOpenChallenges(context.Context, *PaginationRequest) (*ChallengeListResponse, error) {
+func (UnimplementedChallengeServiceServer) GetActiveOpenChallenges(context.Context, *PaginationRequest) (*GetActiveOpenChallengesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveOpenChallenges not implemented")
 }
-func (UnimplementedChallengeServiceServer) GetOwnersActiveChallenges(context.Context, *GetOwnersActiveChallengesRequest) (*ChallengeListResponse, error) {
+func (UnimplementedChallengeServiceServer) GetOwnersActiveChallenges(context.Context, *GetOwnersActiveChallengesRequest) (*GetOwnersActiveChallengesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOwnersActiveChallenges not implemented")
 }
 func (UnimplementedChallengeServiceServer) PushSubmissionStatus(context.Context, *PushSubmissionStatusRequest) (*PushSubmissionStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PushSubmissionStatus not implemented")
+}
+func (UnimplementedChallengeServiceServer) GetPostChallengeData(context.Context, *GetPostChallengeDataRequest) (*GetPostChallengeDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPostChallengeData not implemented")
 }
 func (UnimplementedChallengeServiceServer) mustEmbedUnimplementedChallengeServiceServer() {}
 func (UnimplementedChallengeServiceServer) testEmbeddedByValue()                          {}
@@ -346,6 +358,24 @@ func _ChallengeService_PushSubmissionStatus_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChallengeService_GetPostChallengeData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPostChallengeDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChallengeServiceServer).GetPostChallengeData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChallengeService_GetPostChallengeData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChallengeServiceServer).GetPostChallengeData(ctx, req.(*GetPostChallengeDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ChallengeService_ServiceDesc is the grpc.ServiceDesc for ChallengeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -384,6 +414,10 @@ var ChallengeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PushSubmissionStatus",
 			Handler:    _ChallengeService_PushSubmissionStatus_Handler,
+		},
+		{
+			MethodName: "GetPostChallengeData",
+			Handler:    _ChallengeService_GetPostChallengeData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

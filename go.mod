@@ -1,4 +1,4 @@
-module github.com/lijuuu/GlobalProtoXcode
+module github.com/zenxbattle/CommonProto
 
 go 1.24
 
