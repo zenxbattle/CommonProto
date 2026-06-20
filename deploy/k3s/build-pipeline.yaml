@@ -1,0 +1,20 @@
+7337
+# CommonProto build step — generates Go protobuf stubs
+# Run: make all  (requires protoc-gen-go, protoc-gen-go-grpc)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: proto-build
+spec:
+  template:
+    spec:
+      containers:
+      - name: protoc
+        image: golang:1.24-alpine
+        command: ["sh", "-c"]
+        args:
+        - |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          make all
+      restartPolicy: Never
